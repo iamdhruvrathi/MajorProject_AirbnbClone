@@ -4,7 +4,9 @@ const Listing = require("./models/listing.js");
 const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-const wrapAsync = require("./utils/wrapAsync.js")
+const wrapAsync = require("./utils/wrapAsync.js");
+const ExpressError = require("./utils/ExpressError.js");
+const { listingSchema } = require("./schema.js")
 
 const app = express();
 const MONGO_URL = "mongodb://localhost:27017/wanderlust";
@@ -32,15 +34,27 @@ app.get("/", (req, res) => {
     res.send("Hi, I am root");
 });
 
+const validateListing = (req, res, next) => {
+    let { error } = listingSchema.validate(req.body);
+
+    if (error) {
+        let errMsg = error.details.map((el) => el.message).join(",");
+        throw new ExpressError(400, error);
+    }
+    else {
+        next();
+    }
+}
+
 // Index Route
-app.get("/listings", async (req, res, next) => {
+app.get("/listings", wrapAsync(async (req, res, next) => {
     try {
         const allListings = await Listing.find({});
         res.render("listings/index", { allListings });
     } catch (err) {
         next(err);
     }
-});
+}));
 
 // New Route
 app.get("/listings/new", (req, res) => {
@@ -48,7 +62,7 @@ app.get("/listings/new", (req, res) => {
 });
 
 // Show Route
-app.get("/listings/:id", async (req, res, next) => {
+app.get("/listings/:id", wrapAsync(async (req, res, next) => {
     try {
         const listing = await Listing.findById(req.params.id);
         if (!listing) return res.status(404).send("Listing not found");
@@ -56,18 +70,20 @@ app.get("/listings/:id", async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-});
+}));
 
 // Create Route
-app.post("/listings", wrapAsync(async (req, res, next) => {
-    const newListing = new Listing(req.body.listing);
-    await newListing.save();
-    res.redirect("/listings");
-}
-));
+app.post("/listings",
+    validateListing,
+    wrapAsync(async (req, res, next) => {
+
+        const newListing = new Listing(req.body.listing);
+        await newListing.save();
+        res.redirect("/listings");
+    }));
 
 // Edit Route
-app.get("/listings/:id/edit", async (req, res, next) => {
+app.get("/listings/:id/edit", wrapAsync(async (req, res, next) => {
     try {
         const listing = await Listing.findById(req.params.id);
         if (!listing) return res.status(404).send("Listing not found");
@@ -75,21 +91,26 @@ app.get("/listings/:id/edit", async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-});
+}));
 
 // Update Route
-app.put("/listings/:id", async (req, res, next) => {
-    try {
-        const listing = await Listing.findByIdAndUpdate(req.params.id, { ...req.body.listing });
-        if (!listing) return res.status(404).send("Listing not found");
-        res.redirect(`/listings/${req.params.id}`);
-    } catch (err) {
-        next(err);
-    }
-});
+app.put("/listings/:id",
+    validateListing,
+    wrapAsync(async (req, res, next) => {
+        if (!req.body.listing) {
+            throw new ExpressError(400, "Send valid data for listing");
+        }
+        try {
+            const listing = await Listing.findByIdAndUpdate(req.params.id, { ...req.body.listing });
+            if (!listing) return res.status(404).send("Listing not found");
+            res.redirect(`/listings/${req.params.id}`);
+        } catch (err) {
+            next(err);
+        }
+    }));
 
 // Delete Route
-app.delete("/listings/:id", async (req, res, next) => {
+app.delete("/listings/:id", wrapAsync(async (req, res, next) => {
     try {
         const deletedListing = await Listing.findByIdAndDelete(req.params.id);
         if (!deletedListing) return res.status(404).send("Listing not found");
@@ -97,17 +118,16 @@ app.delete("/listings/:id", async (req, res, next) => {
     } catch (err) {
         next(err);
     }
+}));
+
+app.all("*", (req, res, next) => {
+    next(new ExpressError(404, "Page not Found!"));
 });
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
-    console.error("Error:", err.message);
-    res.status(500).send("An internal server error occurred");
-});
-
-// 404 Page Not Found Middleware
-app.use((req, res) => {
-    res.status(404).send("404 - Page Not Found");
+    let { statusCode = 500, message = "Something went wrong!" } = err;
+    res.status(statusCode).render("error", { message });
 });
 
 // Server
