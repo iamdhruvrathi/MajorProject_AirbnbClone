@@ -7,6 +7,8 @@ const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
 const { listingSchema } = require("./schema.js")
+const Review = require("./models/review.js");
+const { reviewSchema } = require("./schema.js")
 
 const app = express();
 const MONGO_URL = "mongodb://localhost:27017/wanderlust";
@@ -46,6 +48,18 @@ const validateListing = (req, res, next) => {
     }
 }
 
+const validateReview = (req, res, next) => {
+    let { error } = reviewSchema.validate(req.body);
+
+    if (error) {
+        let errMsg = error.details.map((el) => el.message).join(",");
+        throw new ExpressError(400, error);
+    }
+    else {
+        next();
+    }
+}
+
 // Index Route
 app.get("/listings", wrapAsync(async (req, res, next) => {
     try {
@@ -64,7 +78,7 @@ app.get("/listings/new", (req, res) => {
 // Show Route
 app.get("/listings/:id", wrapAsync(async (req, res, next) => {
     try {
-        const listing = await Listing.findById(req.params.id);
+        const listing = await Listing.findById(req.params.id).populate("reviews");
         if (!listing) return res.status(404).send("Listing not found");
         res.render("listings/show", { listing });
     } catch (err) {
@@ -120,6 +134,32 @@ app.delete("/listings/:id", wrapAsync(async (req, res, next) => {
     }
 }));
 
+//Post Rievew Route
+app.post("/listings/:id/reviews", validateReview, wrapAsync(async (req, res) => {
+    let listing = await Listing.findById(req.params.id);
+    let newReview = new Review(req.body.review);
+
+    listing.reviews.push(newReview);
+
+    await newReview.save();
+    await listing.save();
+
+    res.redirect(`/listings/${listing._id}`)
+}));
+
+//Delete Review Route
+app.delete("/listings/:id/reviews/:reviewId", wrapAsync(async (req, res) => {
+    let { id, reviewId } = req.params;
+
+    await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } })
+    await Review.findByIdAndDelete(reviewId);
+
+    res.redirect(`/listings/${id}`);
+}))
+
+
+
+
 app.all("*", (req, res, next) => {
     next(new ExpressError(404, "Page not Found!"));
 });
@@ -132,5 +172,5 @@ app.use((err, req, res, next) => {
 
 // Server
 app.listen(8080, () => {
-    console.log("Server is listening on port 8080");
+    console.log("Server is listening on port 8080: http://localhost:8080/listings");
 });

@@ -1,0 +1,73 @@
+[
+    {
+      "_id": { "$oid": "6741f6d4bfc0cc765b977140" },
+      "comment": "Breathtaking views and serene environment. Perfect for a weekend getaway!",
+      "rating": 5,
+      "createdAt": { "$date": "2024-11-23T15:30:07.616Z" },
+      "__v": 0
+    },
+    {
+      "_id": { "$oid": "6741f6d4bfc0cc765b977141" },
+      "comment": "The food quality was below average, but the staff was friendly.",
+      "rating": 3,
+      "createdAt": { "$date": "2024-11-23T15:35:07.616Z" },
+      "__v": 0
+    },
+    {
+      "_id": { "$oid": "6741f6d4bfc0cc765b977142" },
+      "comment": "Terrible experience. The place was dirty, and the service was unresponsive.",
+      "rating": 1,
+      "createdAt": { "$date": "2024-11-23T15:40:07.616Z" },
+      "__v": 0
+    },
+    {
+      "_id": { "$oid": "6741f6d4bfc0cc765b977143" },
+      "comment": "The rooms were decent but overpriced. The location is convenient.",
+      "rating": 3,
+      "createdAt": { "$date": "2024-11-23T15:45:07.616Z" },
+      "__v": 0
+    },
+    {
+      "_id": { "$oid": "6741f6d4bfc0cc765b977144" },
+      "comment": "Exceptional hospitality and clean rooms. Will definitely visit again.",
+      "rating": 5,
+      "createdAt": { "$date": "2024-11-23T15:50:07.616Z" },
+      "__v": 0
+    },
+    {
+      "_id": { "$oid": "6741f6d4bfc0cc765b977145" },
+      "comment": "Decent stay for the price. Nothing extraordinary, but not bad either.",
+      "rating": 4,
+      "createdAt": { "$date": "2024-11-23T15:55:07.616Z" },
+      "__v": 0
+    },
+    {
+      "_id": { "$oid": "6741f6d4bfc0cc765b977146" },
+      "comment": "Amazing ambiance and delicious food. Highly recommended for families.",
+      "rating": 5,
+      "createdAt": { "$date": "2024-11-23T16:00:07.616Z" },
+      "__v": 0
+    },
+    {
+      "_id": { "$oid": "6741f6d4bfc0cc765b977147" },
+      "comment": "The service was a bit slow, but the staff were polite and helpful.",
+      "rating": 4,
+      "createdAt": { "$date": "2024-11-23T16:05:07.616Z" },
+      "__v": 0
+    },
+    {
+      "_id": { "$oid": "6741f6d4bfc0cc765b977148" },
+      "comment": "Disappointing experience. The amenities mentioned were not available.",
+      "rating": 2,
+      "createdAt": { "$date": "2024-11-23T16:10:07.616Z" },
+      "__v": 0
+    },
+    {
+      "_id": { "$oid": "6741f6d4bfc0cc765b977149" },
+      "comment": "Perfect destination for a relaxing vacation. The staff went above and beyond.",
+      "rating": 5,
+      "createdAt": { "$date": "2024-11-23T16:15:07.616Z" },
+      "__v": 0
+    }
+  ]
+  
