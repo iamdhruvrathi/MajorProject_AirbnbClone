@@ -12,7 +12,7 @@ async function main() {
 
         // Initialize the database
         await initDB();
-        
+
     } catch (err) {
         console.error("Error connecting to DB or initializing data:", err);
     } finally {
@@ -25,13 +25,14 @@ async function main() {
 const initDB = async () => {
     try {
         await Listing.deleteMany({});
+        initData.data = initData.data.map((obj) => ({ ...obj, owner: "6747f678f55be7d7469c1c44" }));
         await Listing.insertMany(initData.data);
         console.log("Data was initialized");
     } catch (err) {
         console.error("Error initializing data:", err);
-        throw err; // Rethrow the error so it can be caught in the main function
+        throw err;
     }
 };
 
-// Start the process
+
 main();
