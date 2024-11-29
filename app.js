@@ -18,7 +18,6 @@ const userRouter = require("./routes/user.js");
 
 // MongoDB Connection
 const MONGO_URL = "mongodb://localhost:27017/wanderlust";
-
 mongoose
     .connect(MONGO_URL)
     .then(() => console.log("Connected to DB"))
@@ -35,37 +34,36 @@ app.use(express.static(path.join(__dirname, "/public")));
 const sessionOptions = {
     secret: "mysupersecretcode",
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
 };
-
 app.use(session(sessionOptions));
 app.use(flash());
 
+// Passport Configuration
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
-
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
+// Global Middleware for Flash Messages and User
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
     res.locals.currUser = req.user;
-
     next();
 });
 
 // Routes
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
-app.use("/", userRouter)
+app.use("/", userRouter);
 
 app.get("/", (req, res) => {
     res.send("Hi, I am root");
 });
 
-// Handle All Undefined Routes
+// Handle Undefined Routes
 app.all("*", (req, res, next) => {
     next(new ExpressError(404, "Page not Found!"));
 });
@@ -73,7 +71,6 @@ app.all("*", (req, res, next) => {
 // Error Handling Middleware
 app.use((err, req, res, next) => {
     const { statusCode = 500, message = "Something went wrong!" } = err;
-    console.error(err); // Log error details for debugging
     res.status(statusCode).render("error", { message });
 });
 

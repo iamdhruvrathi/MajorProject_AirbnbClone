@@ -3,34 +3,37 @@ const Review = require("./models/review");
 const ExpressError = require("./utils/ExpressError.js");
 const { listingSchema, reviewSchema } = require("./schema.js");
 
-
+// Check if Logged In
 module.exports.isLoggedIn = (req, res, next) => {
     if (!req.isAuthenticated()) {
-        req.session.redirectUrl = req.originalUrl; // Save the original URL
-        req.flash("error", "You must be logged in to create a listing.");
+        req.session.redirectUrl = req.originalUrl;
+        req.flash("error", "You must be logged in to perform this action.");
         return res.redirect("/login");
     }
     next();
 };
 
+// Save Redirect URL
 module.exports.saveRedirectUrl = (req, res, next) => {
     if (req.session.redirectUrl) {
-        res.locals.redirectUrl = req.session.redirectUrl; // Make it available to views
-        delete req.session.redirectUrl; // Clean up the session
+        res.locals.redirectUrl = req.session.redirectUrl;
+        delete req.session.redirectUrl;
     }
     next();
 };
 
+// Check Ownership of Listing
 module.exports.isOwner = async (req, res, next) => {
     const { id } = req.params;
-    const listing = await Listing.findById(id);
-    if (!listing.owner._id.equals(res.locals.currUser._id)) {
-        req.flash("error", "You are not the owner of this listing");
-        return res.redirect(`/listings/${listing._id}`);
+    const listing = await Listings.findById(id);
+    if (!listing.owner.equals(req.user._id)) {
+        req.flash("error", "You are not authorized to edit this listing.");
+        return res.redirect(`/listings/${id}`);
     }
-}
+    next();
+};
 
-// Middleware to Validate Listing
+// Validate Listing Data
 module.exports.validateListing = (req, res, next) => {
     const { error } = listingSchema.validate(req.body);
     if (error) {
@@ -40,8 +43,18 @@ module.exports.validateListing = (req, res, next) => {
     next();
 };
 
+// Check Review Author
+module.exports.isReviewAuthor = async (req, res, next) => {
+    const { reviewId } = req.params;
+    const review = await Review.findById(reviewId);
+    if (!review.author.equals(req.user._id)) {
+        req.flash("error", "You are not authorized to delete this review.");
+        return res.redirect("back");
+    }
+    next();
+};
 
-// Middleware to Validate Review
+// Validate Review Data
 module.exports.validateReview = (req, res, next) => {
     const { error } = reviewSchema.validate(req.body);
     if (error) {
@@ -50,12 +63,3 @@ module.exports.validateReview = (req, res, next) => {
     }
     next();
 };
-
-module.exports.isReviewAuthor = async (req, res, next) => {
-    const { id, reviewId } = req.params;
-    const review = await Review.findById(reviewId);
-    if (!review.author._id.equals(res.locals.currUser._id)) {
-        req.flash("error", "You are not the author of this review");
-        return res.redirect(`/listings/${id}`);
-    }
-}
