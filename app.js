@@ -64,8 +64,9 @@ app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
 
 app.get("/", (req, res) => {
-    res.send("Hi, I am root");
+    res.redirect("/listings");
 });
+
 
 // Handle Undefined Routes
 app.all("*", (req, res, next) => {
