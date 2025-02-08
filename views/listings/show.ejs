@@ -8,7 +8,7 @@
     <div class="card col-6 offset-3 show-card listing-card">
       <img
         class="card-img-top show-img"
-        src="<%= listing.image.url %>"
+        src="<%= listing.image ? listing.image.url : '/images/default.jpg' %>"
         alt="listing_image"
       />
 
@@ -30,19 +30,13 @@
     </div>
     <br />
 
-    <% if (currUser && currUser._id.equals(listing.owner._id)) { %>
-    <div class="btns">
-      <a
-        href="/listings/<%= listing._id %>/edit"
-        class="btn btn-dark col-1 offset-3 edit-btn"
+    <% if (currUser && listing.owner && String(currUser._id) ===
+    String(listing.owner._id)) { %>
+    <div class="btns d-flex justify-content-start mt-3">
+      <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark mx-2"
+        >Edit</a
       >
-        Edit
-      </a>
-      <form
-        method="POST"
-        action="/listings/<%= listing._id %>?_method=DELETE"
-        class="col-1 offset-1"
-      >
+      <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
         <button class="btn btn-dark">Delete</button>
       </form>
     </div>
@@ -66,9 +60,8 @@
               id="no-rate"
               class="input-no-rate"
               name="review[rating]"
-              value="1"
+              value="0"
               checked
-              aria-label="No rating."
             />
             <input
               type="radio"
@@ -132,20 +125,25 @@
         <% for (let review of listing.reviews) { %>
         <div class="card col-5 ms-3 mb-3">
           <div class="card-body">
-            <h5 class="card-title">@<%= review.author.username %></h5>
+            <h5 class="card-title">
+              @<%= review.author ? review.author.username : "Anonymous" %>
+            </h5>
             <p class="card-text"><%= review.comment %></p>
             <p
               class="starability-result card-text"
               data-rating="<%= review.rating %>"
             ></p>
           </div>
+
+          <% if (currUser && String(currUser._id) === String(review.author._id))
+          { %>
           <form
-            class="mb-3"
             method="POST"
             action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
           >
             <button class="btn btn-sm btn-dark">Delete</button>
           </form>
+          <% } %>
         </div>
         <% } %>
       </div>
