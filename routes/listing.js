@@ -19,6 +19,18 @@ router
         wrapAsync(listingController.createListing)
     )
 
+// Search Route
+router.get("/search", wrapAsync(async (req, res) => {
+    const query = req.query.q;
+    if (!query) return res.redirect("/listings");
+
+    const allListings = await Listing.find({
+        title: { $regex: query, $options: "i" }
+    });
+
+    res.render("listings/index", { allListings });
+}));
+
 // New Route
 router.get("/new", isLoggedIn, listingController.renderNewForm);
 
