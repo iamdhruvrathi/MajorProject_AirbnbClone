@@ -1,5 +1,5 @@
 if (process.env.NODE_ENV != "production") {
-    require('dotenv').config()
+    require('dotenv').config();
 }
 
 const express = require("express");
@@ -22,7 +22,7 @@ const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 
 // MongoDB Connection
-const dbUrl = process.env.ATLASDB_URL
+const dbUrl = process.env.ATLASDB_URL;
 
 mongoose
     .connect(dbUrl, { serverSelectionTimeoutMS: 5000 }) // 5-second timeout
@@ -31,7 +31,6 @@ mongoose
         console.error("Error connecting to MongoDB:", err.message);
         process.exit(1); // Exit on failure
     });
-
 
 // Middleware and Configurations
 app.engine("ejs", ejsMate);
@@ -49,8 +48,8 @@ const store = MongoStore.create({
     touchAfter: 24 * 3600,
 });
 
-store.on("error", () => {
-    console.log("Error in Mongo Session Store", err)
+store.on("error", (err) => {
+    console.log("Error in Mongo Session Store", err);
 });
 
 const sessionOptions = {
@@ -59,6 +58,7 @@ const sessionOptions = {
     resave: false,
     saveUninitialized: false,
 };
+
 app.use(session(sessionOptions));
 app.use(flash());
 
@@ -75,6 +75,11 @@ app.use((req, res, next) => {
     res.locals.error = req.flash("error");
     res.locals.currUser = req.user;
     next();
+});
+
+// 👉 Redirect root to /listings
+app.get("/", (req, res) => {
+    res.redirect("/listings");
 });
 
 // Routes
